@@ -1,0 +1,45 @@
+
+name: Build VillageCart Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Create Flutter Android project
+        run: flutter create --platforms=android --project-name=village_cart --org=com.villagecart build_app
+
+      - name: Copy VillageCart app code
+        run: cp lib/main.dart build_app/lib/main.dart
+
+      - name: Install dependencies
+        working-directory: build_app
+        run: flutter pub get
+
+      - name: Build APK
+        working-directory: build_app
+        run: flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: VillageCart-Android
+          path: build_app/build/app/outputs/flutter-apk/app-release.apk
+          
